@@ -1,0 +1,144 @@
+{
+  "architecture": {
+    "feature_encoder": {
+      "description": "1D-CNN for local pattern extraction from audio features",
+      "layers": [
+        {
+          "type": "conv1d",
+          "in_channels": 1,
+          "out_channels": 64,
+          "kernel": 5,
+          "padding": 2,
+          "activation": "relu"
+        },
+        {
+          "type": "batchnorm1d",
+          "features": 64
+        },
+        {
+          "type": "conv1d",
+          "in_channels": 64,
+          "out_channels": 128,
+          "kernel": 5,
+          "padding": 2,
+          "activation": "relu"
+        },
+        {
+          "type": "batchnorm1d",
+          "features": 128
+        },
+        {
+          "type": "maxpool1d",
+          "kernel": 2
+        },
+        {
+          "type": "conv1d",
+          "in_channels": 128,
+          "out_channels": 128,
+          "kernel": 3,
+          "padding": 1,
+          "activation": "relu"
+        },
+        {
+          "type": "dropout",
+          "p": 0.3
+        }
+      ]
+    },
+    "temporal_model": {
+      "description": "BiLSTM captures long-range temporal dependencies in speech",
+      "layers": [
+        {
+          "type": "bilstm",
+          "input": 128,
+          "hidden": 128,
+          "layers": 2,
+          "dropout": 0.3
+        },
+        {
+          "type": "attention",
+          "hidden": 256,
+          "heads": 4
+        }
+      ]
+    },
+    "classifier": {
+      "description": "Multi-label emphasis classifier",
+      "layers": [
+        {
+          "type": "linear",
+          "in": 256,
+          "out": 128,
+          "activation": "relu"
+        },
+        {
+          "type": "dropout",
+          "p": 0.4
+        },
+        {
+          "type": "linear",
+          "in": 128,
+          "out": 8,
+          "activation": "sigmoid"
+        }
+      ]
+    }
+  },
+  "training_log": [
+    {
+      "epoch": 1,
+      "loss": 1.4974,
+      "f1_score": 0.4347,
+      "false_alarm_rate": 0.15
+    },
+    {
+      "epoch": 2,
+      "loss": 1.2147,
+      "f1_score": 0.5339,
+      "false_alarm_rate": 0.125
+    },
+    {
+      "epoch": 3,
+      "loss": 0.9941,
+      "f1_score": 0.6717,
+      "false_alarm_rate": 0.1
+    },
+    {
+      "epoch": 4,
+      "loss": 0.8118,
+      "f1_score": 0.7385,
+      "false_alarm_rate": 0.075
+    },
+    {
+      "epoch": 5,
+      "loss": 0.6753,
+      "f1_score": 0.8479,
+      "false_alarm_rate": 0.05
+    }
+  ],
+  "emphasis_types": [
+    "volume_spike",
+    "pitch_rise",
+    "slow_down",
+    "pause_before",
+    "pause_after",
+    "repetition",
+    "stress_pattern",
+    "normal"
+  ],
+  "importance_scores": {
+    "volume_spike": 0.85,
+    "pitch_rise": 0.7,
+    "slow_down": 0.8,
+    "pause_before": 0.9,
+    "pause_after": 0.75,
+    "repetition": 0.95,
+    "stress_pattern": 0.65,
+    "normal": 0.1
+  },
+  "config": {
+    "sample_rate": 16000,
+    "n_mfcc": 13,
+    "epochs": 15
+  }
+}

@@ -1,0 +1,164 @@
+{
+  "architecture": {
+    "backbone": [
+      {
+        "type": "conv2d",
+        "filters": 32,
+        "kernel": 3,
+        "stride": 1,
+        "padding": 1,
+        "activation": "relu"
+      },
+      {
+        "type": "batchnorm2d",
+        "features": 32
+      },
+      {
+        "type": "maxpool2d",
+        "kernel": 2,
+        "stride": 2
+      },
+      {
+        "type": "conv2d",
+        "filters": 64,
+        "kernel": 3,
+        "stride": 1,
+        "padding": 1,
+        "activation": "relu"
+      },
+      {
+        "type": "batchnorm2d",
+        "features": 64
+      },
+      {
+        "type": "maxpool2d",
+        "kernel": 2,
+        "stride": 2
+      },
+      {
+        "type": "conv2d",
+        "filters": 128,
+        "kernel": 3,
+        "stride": 1,
+        "padding": 1,
+        "activation": "relu"
+      },
+      {
+        "type": "batchnorm2d",
+        "features": 128
+      },
+      {
+        "type": "conv2d",
+        "filters": 128,
+        "kernel": 3,
+        "stride": 1,
+        "padding": 1,
+        "activation": "relu"
+      },
+      {
+        "type": "maxpool2d",
+        "kernel": 2,
+        "stride": 2
+      },
+      {
+        "type": "conv2d",
+        "filters": 256,
+        "kernel": 3,
+        "stride": 1,
+        "padding": 1,
+        "activation": "relu"
+      },
+      {
+        "type": "batchnorm2d",
+        "features": 256
+      },
+      {
+        "type": "maxpool2d",
+        "kernel": 2,
+        "stride": 2
+      }
+    ],
+    "detection_head": [
+      {
+        "type": "conv2d",
+        "filters": 256,
+        "kernel": 3,
+        "padding": 1,
+        "activation": "relu"
+      },
+      {
+        "type": "conv2d",
+        "filters": 128,
+        "kernel": 1,
+        "activation": "relu"
+      },
+      {
+        "type": "conv2d",
+        "filters": 8,
+        "kernel": 1
+      }
+    ],
+    "recognition_head": [
+      {
+        "type": "reshape",
+        "target": "sequence"
+      },
+      {
+        "type": "bilstm",
+        "hidden": 256,
+        "layers": 2,
+        "dropout": 0.3
+      },
+      {
+        "type": "linear",
+        "out_features": 96
+      },
+      {
+        "type": "ctc_decoder"
+      }
+    ]
+  },
+  "training_log": [
+    {
+      "epoch": 1,
+      "loss": 2.4592,
+      "accuracy": -0.01,
+      "cer": 0.5031
+    },
+    {
+      "epoch": 2,
+      "loss": 1.8841,
+      "accuracy": 0.3998,
+      "cer": 0.3313
+    },
+    {
+      "epoch": 3,
+      "loss": 1.343,
+      "accuracy": 0.6133,
+      "cer": 0.2321
+    },
+    {
+      "epoch": 4,
+      "loss": 0.9936,
+      "accuracy": 0.7676,
+      "cer": 0.1459
+    },
+    {
+      "epoch": 5,
+      "loss": 0.7308,
+      "accuracy": 0.8685,
+      "cer": 0.1013
+    }
+  ],
+  "config": {
+    "image_size": [
+      640,
+      480
+    ],
+    "batch_size": 16,
+    "epochs": 10,
+    "learning_rate": 0.001
+  },
+  "num_features_extracted": 0,
+  "num_augmented_images": 15
+}

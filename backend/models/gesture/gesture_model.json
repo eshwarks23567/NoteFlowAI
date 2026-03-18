@@ -1,0 +1,182 @@
+{
+  "architecture": {
+    "spatial_stream": {
+      "description": "Per-frame pose feature extraction",
+      "layers": [
+        {
+          "type": "linear",
+          "in": 67,
+          "out": 128,
+          "activation": "relu"
+        },
+        {
+          "type": "batchnorm1d",
+          "features": 128
+        },
+        {
+          "type": "dropout",
+          "p": 0.3
+        },
+        {
+          "type": "linear",
+          "in": 128,
+          "out": 64,
+          "activation": "relu"
+        }
+      ]
+    },
+    "temporal_stream": {
+      "description": "Sequence of pose features \u2192 gesture classification",
+      "layers": [
+        {
+          "type": "lstm",
+          "input": 64,
+          "hidden": 128,
+          "layers": 2,
+          "bidirectional": true
+        },
+        {
+          "type": "attention",
+          "hidden": 256
+        },
+        {
+          "type": "linear",
+          "in": 256,
+          "out": 8,
+          "activation": "softmax"
+        }
+      ]
+    },
+    "hand_region_cnn": {
+      "description": "Optional CNN for cropped hand region classification",
+      "layers": [
+        {
+          "type": "conv2d",
+          "filters": 32,
+          "kernel": 3,
+          "activation": "relu"
+        },
+        {
+          "type": "maxpool2d",
+          "kernel": 2
+        },
+        {
+          "type": "conv2d",
+          "filters": 64,
+          "kernel": 3,
+          "activation": "relu"
+        },
+        {
+          "type": "global_avg_pool"
+        },
+        {
+          "type": "linear",
+          "in": 64,
+          "out": 8
+        }
+      ]
+    }
+  },
+  "training_log": [
+    {
+      "epoch": 1,
+      "loss": 1.802,
+      "accuracy": 0.4198,
+      "gesture_accuracies": {
+        "pointing": 0.4342,
+        "counting": 0.3375,
+        "waving": 0.4184,
+        "raised_hand": 0.4091,
+        "lean_forward": 0.498,
+        "writing": 0.3853,
+        "resting": 0.3674,
+        "open_palm": 0.3444
+      }
+    },
+    {
+      "epoch": 2,
+      "loss": 1.3841,
+      "accuracy": 0.5321,
+      "gesture_accuracies": {
+        "pointing": 0.5908,
+        "counting": 0.5908,
+        "waving": 0.5515,
+        "raised_hand": 0.5817,
+        "lean_forward": 0.4718,
+        "writing": 0.5317,
+        "resting": 0.4396,
+        "open_palm": 0.4497
+      }
+    },
+    {
+      "epoch": 3,
+      "loss": 1.1154,
+      "accuracy": 0.6213,
+      "gesture_accuracies": {
+        "pointing": 0.5641,
+        "counting": 0.5342,
+        "waving": 0.7205,
+        "raised_hand": 0.6611,
+        "lean_forward": 0.5556,
+        "writing": 0.6618,
+        "resting": 0.687,
+        "open_palm": 0.5492
+      }
+    },
+    {
+      "epoch": 4,
+      "loss": 0.8726,
+      "accuracy": 0.7449,
+      "gesture_accuracies": {
+        "pointing": 0.7758,
+        "counting": 0.7491,
+        "waving": 0.7416,
+        "raised_hand": 0.706,
+        "lean_forward": 0.7346,
+        "writing": 0.8418,
+        "resting": 0.7826,
+        "open_palm": 0.7064
+      }
+    },
+    {
+      "epoch": 5,
+      "loss": 0.6881,
+      "accuracy": 0.8889,
+      "gesture_accuracies": {
+        "pointing": 0.9024,
+        "counting": 0.9441,
+        "waving": 0.8703,
+        "raised_hand": 0.8231,
+        "lean_forward": 0.9093,
+        "writing": 0.8018,
+        "resting": 0.8289,
+        "open_palm": 0.9151
+      }
+    }
+  ],
+  "gesture_types": [
+    "pointing",
+    "counting",
+    "waving",
+    "raised_hand",
+    "lean_forward",
+    "writing",
+    "resting",
+    "open_palm"
+  ],
+  "importance_weights": {
+    "pointing": 0.8,
+    "counting": 0.6,
+    "waving": 0.5,
+    "raised_hand": 0.9,
+    "lean_forward": 0.85,
+    "writing": 0.4,
+    "resting": 0.1,
+    "open_palm": 0.7
+  },
+  "config": {
+    "num_keypoints": 17,
+    "sequence_length": 10,
+    "epochs": 15
+  }
+}

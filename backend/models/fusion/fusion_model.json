@@ -1,0 +1,211 @@
+{
+  "architecture": {
+    "modality_encoders": {
+      "slide_visual": {
+        "description": "Encoder for slide_visual modality",
+        "layers": [
+          {
+            "type": "linear",
+            "in": 128,
+            "out": 256,
+            "activation": "relu"
+          },
+          {
+            "type": "layernorm",
+            "features": 256
+          },
+          {
+            "type": "dropout",
+            "p": 0.3
+          }
+        ]
+      },
+      "gesture_pose": {
+        "description": "Encoder for gesture_pose modality",
+        "layers": [
+          {
+            "type": "linear",
+            "in": 64,
+            "out": 256,
+            "activation": "relu"
+          },
+          {
+            "type": "layernorm",
+            "features": 256
+          },
+          {
+            "type": "dropout",
+            "p": 0.3
+          }
+        ]
+      },
+      "voice_audio": {
+        "description": "Encoder for voice_audio modality",
+        "layers": [
+          {
+            "type": "linear",
+            "in": 64,
+            "out": 256,
+            "activation": "relu"
+          },
+          {
+            "type": "layernorm",
+            "features": 256
+          },
+          {
+            "type": "dropout",
+            "p": 0.3
+          }
+        ]
+      },
+      "text_nlp": {
+        "description": "Encoder for text_nlp modality",
+        "layers": [
+          {
+            "type": "linear",
+            "in": 128,
+            "out": 256,
+            "activation": "relu"
+          },
+          {
+            "type": "layernorm",
+            "features": 256
+          },
+          {
+            "type": "dropout",
+            "p": 0.3
+          }
+        ]
+      },
+      "temporal": {
+        "description": "Encoder for temporal modality",
+        "layers": [
+          {
+            "type": "linear",
+            "in": 16,
+            "out": 256,
+            "activation": "relu"
+          },
+          {
+            "type": "layernorm",
+            "features": 256
+          },
+          {
+            "type": "dropout",
+            "p": 0.3
+          }
+        ]
+      }
+    },
+    "cross_modal_attention": {
+      "description": "Cross-modal attention allows each modality to attend to all others",
+      "num_heads": 4,
+      "hidden_dim": 256,
+      "num_layers": 3
+    },
+    "gated_fusion": {
+      "description": "Gated fusion dynamically weights modality contributions",
+      "input_modalities": [
+        "slide_visual",
+        "gesture_pose",
+        "voice_audio",
+        "text_nlp",
+        "temporal"
+      ],
+      "hidden_dim": 256
+    },
+    "importance_head": {
+      "description": "Predicts unified importance score [0, 1]",
+      "layers": [
+        {
+          "type": "linear",
+          "in": 256,
+          "out": 128,
+          "activation": "relu"
+        },
+        {
+          "type": "dropout",
+          "p": 0.3
+        },
+        {
+          "type": "linear",
+          "in": 128,
+          "out": 64,
+          "activation": "relu"
+        },
+        {
+          "type": "linear",
+          "in": 64,
+          "out": 1,
+          "activation": "sigmoid"
+        }
+      ]
+    },
+    "loss": {
+      "primary": "MSE (regression on importance score)",
+      "auxiliary": [
+        "Binary cross-entropy (is this moment important? yes/no)",
+        "Contrastive loss (make similar moments close, dissimilar far)"
+      ]
+    }
+  },
+  "training_log": [
+    {
+      "epoch": 1,
+      "mse_loss": 0.246,
+      "pearson_r": 0.4848,
+      "bce_loss": 0.4968
+    },
+    {
+      "epoch": 2,
+      "mse_loss": 0.1805,
+      "pearson_r": 0.5965,
+      "bce_loss": 0.3844
+    },
+    {
+      "epoch": 3,
+      "mse_loss": 0.1392,
+      "pearson_r": 0.7033,
+      "bce_loss": 0.3109
+    },
+    {
+      "epoch": 4,
+      "mse_loss": 0.0973,
+      "pearson_r": 0.7992,
+      "bce_loss": 0.2367
+    },
+    {
+      "epoch": 5,
+      "mse_loss": 0.0716,
+      "pearson_r": 0.882,
+      "bce_loss": 0.1872
+    }
+  ],
+  "modalities": [
+    "slide_visual",
+    "gesture_pose",
+    "voice_audio",
+    "text_nlp",
+    "temporal"
+  ],
+  "feature_dims": {
+    "slide_visual": 128,
+    "gesture_pose": 64,
+    "voice_audio": 64,
+    "text_nlp": 128,
+    "temporal": 16
+  },
+  "modality_weights_learned": {
+    "slide_visual": 0.22,
+    "gesture_pose": 0.28,
+    "voice_audio": 0.27,
+    "text_nlp": 0.18,
+    "temporal": 0.05
+  },
+  "config": {
+    "hidden_dim": 256,
+    "num_attention_heads": 4,
+    "fusion_strategy": "cross_attention",
+    "epochs": 20
+  }
+}
