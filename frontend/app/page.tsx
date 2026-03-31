@@ -35,6 +35,16 @@ export default function Home() {
     startSession(title || "Live Lecture", false);
   };
 
+  const handleStartYoutube = () => {
+    const title = (document.getElementById("lecture-title-input") as HTMLInputElement)?.value?.trim();
+    const url = (document.getElementById("youtube-url-input") as HTMLInputElement)?.value?.trim();
+    if (!url) {
+      alert("Please enter a YouTube URL");
+      return;
+    }
+    startSession(title || "YouTube Lecture", false, url);
+  };
+
   const handleExport = async () => {
     const content = await exportNotes();
     if (content) {
@@ -94,14 +104,27 @@ export default function Home() {
               />
             </div>
 
+            <div className="start-input-group" style={{ marginTop: 16 }}>
+              <label htmlFor="youtube-url-input" className="start-label">YouTube Lecture URL</label>
+              <input
+                id="youtube-url-input"
+                type="text"
+                className="start-input"
+                placeholder="https://www.youtube.com/watch?v=..."
+              />
+            </div>
+
             <div className="start-buttons">
-              <button className="btn btn-primary start-btn" onClick={handleStartLive}>
+              <button className="btn btn-primary start-btn" onClick={handleStartYoutube}>
+                Start YouTube Demo
+                <span className="btn-sub">Processes video transcript</span>
+              </button>
+              <button className="btn btn-ghost start-btn" onClick={handleStartLive}>
                 Start Live Lecture
                 <span className="btn-sub">Uses your mic + camera</span>
               </button>
               <button className="btn btn-ghost start-btn" onClick={handleStartDemo}>
-                Run Demo
-                <span className="btn-sub">Simulated ML lecture</span>
+                Run Static Demo
               </button>
             </div>
 

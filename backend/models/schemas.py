@@ -163,6 +163,7 @@ class WSMessage(BaseModel):
 class StartSessionRequest(BaseModel):
     title: str = "Untitled Lecture"
     demo_mode: bool = True
+    youtube_url: Optional[str] = None
 
 class SearchQuery(BaseModel):
     query: str

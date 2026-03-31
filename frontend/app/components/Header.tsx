@@ -6,7 +6,7 @@ interface HeaderProps {
     isActive: boolean;
     elapsedSeconds: number;
     connectionStatus: string;
-    mode: "idle" | "demo" | "live";
+    mode: "idle" | "demo" | "live" | "youtube";
     notesSavedPath: string | null;
     onStart: () => void;
     onStartLive: () => void;
@@ -28,7 +28,7 @@ export default function Header({
                 <span className="header-title">{title}</span>
                 {isActive && mode !== "idle" && (
                     <span className={`mode-badge ${mode}`}>
-                        {mode === "live" ? "LIVE" : "DEMO"}
+                        {mode === "live" ? "LIVE" : mode === "youtube" ? "YOUTUBE" : "DEMO"}
                     </span>
                 )}
             </div>

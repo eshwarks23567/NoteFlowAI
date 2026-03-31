@@ -43,7 +43,10 @@ pip install -r requirements.txt
 python main.py
 ```
 
-Backend runs on `http://localhost:8000`. Demo mode simulates a Machine Learning lecture with transcription, slide changes, gesture events, and importance scoring.
+Backend runs on `http://localhost:8000`. 
+- **Demo mode**: Simulates a Machine Learning lecture.
+- **YouTube mode**: Processes any YouTube lecture URL in real-time.
+- **Live mode**: Uses your system's mic and camera.
 
 ### 2. Start the Frontend
 
@@ -58,7 +61,9 @@ Frontend runs on `http://localhost:3000`.
 ### 3. Use the App
 
 1. Open `http://localhost:3000`
-2. Click **Start Demo** to begin a simulated lecture
+2. **Standard Demo**: Click **Run Static Demo** to see a pre-recorded ML lecture simulation.
+3. **YouTube Demo**: Paste a YouTube URL (e.g., a CS50 lecture) and click **Start YouTube Demo** to process it live.
+4. **Live Lecture**: Enter a title and click **Start Live Lecture** to use your own hardware.
 3. Watch as:
    - Live transcription streams in the center panel
    - Key concepts appear with importance indicators (Critical, Important)
@@ -74,6 +79,7 @@ Frontend runs on `http://localhost:3000`.
 
 | Feature | Description |
 |---------|-------------|
+| YouTube Integration | Support for processing any YouTube lecture video |
 | Live Transcription | Real-time speech-to-text with speaker diarization |
 | Slide OCR | Automatic slide detection and text extraction |
 | Gesture Detection | Professor gesture analysis for emphasis detection |

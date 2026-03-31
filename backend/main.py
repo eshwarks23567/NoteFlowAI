@@ -22,6 +22,7 @@ from services.demo_simulator import (
 )
 from services.note_generator import generate_markdown_notes, save_notes_to_file
 from services.live_processor import LiveProcessor
+from services.youtube_processor import YoutubeProcessor
 
 
 # ── State ────────────────────────────────────────────────────────
@@ -29,6 +30,7 @@ active_sessions: dict[str, LectureSession] = {}
 connected_clients: list[WebSocket] = []
 active_simulators: dict[str, DemoSimulator] = {}
 active_processors: dict[str, LiveProcessor] = {}
+active_youtube_processors: dict[str, YoutubeProcessor] = {}
 
 
 # ── App ──────────────────────────────────────────────────────────
@@ -103,7 +105,16 @@ async def start_session(req: StartSessionRequest):
     session = LectureSession(title=req.title)
     active_sessions[session.id] = session
 
-    if req.demo_mode:
+    if req.youtube_url:
+        # YouTube mode
+        async def store_and_broadcast(msg: WSMessage):
+            _store_event(session.id, msg.event_type, msg.data)
+            await broadcast(msg)
+            
+        yt_processor = YoutubeProcessor(send_callback=store_and_broadcast)
+        active_youtube_processors[session.id] = yt_processor
+        asyncio.create_task(yt_processor.process_video(req.youtube_url, session))
+    elif req.demo_mode:
         # Demo mode — use the simulator with hardcoded data
         async def store_and_broadcast(msg: WSMessage):
             _store_event(session.id, msg.event_type, msg.data)
@@ -121,7 +132,8 @@ async def start_session(req: StartSessionRequest):
         "session_id": session.id,
         "title": session.title,
         "demo_mode": req.demo_mode,
-        "mode": "demo" if req.demo_mode else "live",
+        "youtube_url": req.youtube_url,
+        "mode": "youtube" if req.youtube_url else "demo" if req.demo_mode else "live",
     }
 
 

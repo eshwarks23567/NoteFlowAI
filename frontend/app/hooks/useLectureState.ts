@@ -160,12 +160,16 @@ export function useLectureState() {
     }, []);
 
     /* ── Session management ── */
-    const startSession = async (title: string = "Untitled Lecture", demoMode: boolean = true) => {
+    const startSession = async (title: string = "Untitled Lecture", demoMode: boolean = true, youtubeUrl?: string) => {
         try {
             const res = await fetch(`${API_BASE}/api/session/start`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ title, demo_mode: demoMode }),
+                body: JSON.stringify({ 
+                    title, 
+                    demo_mode: demoMode,
+                    youtube_url: youtubeUrl 
+                }),
             });
             const data = await res.json();
             setState(s => ({
@@ -174,7 +178,7 @@ export function useLectureState() {
                 title: data.title,
                 isActive: true,
                 startTime: Date.now() / 1000,
-                mode: demoMode ? "demo" : "live",
+                mode: youtubeUrl ? "youtube" : demoMode ? "demo" : "live",
                 notesSavedPath: null,
                 // Reset state
                 transcript: [],
