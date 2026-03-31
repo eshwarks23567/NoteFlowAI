@@ -1,12 +1,14 @@
-"use client";
 import { useRef, useState, useEffect, useCallback } from "react";
+import YouTubePlayer from "./YouTubePlayer";
 
 interface CameraPanelProps {
     isActive: boolean;
+    mode: "idle" | "demo" | "live" | "youtube";
+    youtubeUrl: string | null;
     onFrameCapture?: (frameData: string) => void;
 }
 
-export default function CameraPanel({ isActive, onFrameCapture }: CameraPanelProps) {
+export default function CameraPanel({ isActive, mode, youtubeUrl, onFrameCapture }: CameraPanelProps) {
     const videoRef = useRef<HTMLVideoElement>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const streamRef = useRef<MediaStream | null>(null);
@@ -147,8 +149,8 @@ export default function CameraPanel({ isActive, onFrameCapture }: CameraPanelPro
         <div className="glass-card camera-panel">
             <div className="panel-header">
                 <span className="panel-title">
-                    <span className="panel-title-icon">CAM</span>
-                    Live Camera Feed
+                    <span className="panel-title-icon">{mode === "youtube" ? "YOUTUBE" : "CAM"}</span>
+                    {mode === "youtube" ? "Lecture Video" : "Live Camera Feed"}
                 </span>
                 <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
                     {cameraActive && (
@@ -172,17 +174,23 @@ export default function CameraPanel({ isActive, onFrameCapture }: CameraPanelPro
             <div className="camera-body">
                 {/* Video + Canvas */}
                 <div className="camera-viewport">
-                    <video
-                        ref={videoRef}
-                        autoPlay
-                        playsInline
-                        muted
-                        className={`camera-video ${cameraActive ? "active" : ""}`}
-                    />
-                    <canvas ref={canvasRef} style={{ display: "none" }} />
+                    {mode === "youtube" && youtubeUrl ? (
+                        <YouTubePlayer url={youtubeUrl} isActive={isActive} />
+                    ) : (
+                        <>
+                            <video
+                                ref={videoRef}
+                                autoPlay
+                                playsInline
+                                muted
+                                className={`camera-video ${cameraActive ? "active" : ""}`}
+                            />
+                            <canvas ref={canvasRef} style={{ display: "none" }} />
+                        </>
+                    )}
 
                     {/* Overlay when not active */}
-                    {!cameraActive && !error && (
+                    {mode !== "youtube" && !cameraActive && !error && (
                         <div className="camera-placeholder">
                             <div className="camera-placeholder-icon">CAM</div>
                             <div className="camera-placeholder-text">
@@ -232,7 +240,8 @@ export default function CameraPanel({ isActive, onFrameCapture }: CameraPanelPro
                 </div>
 
                 {/* Controls */}
-                <div className="camera-controls">
+                {mode !== "youtube" && (
+                    <div className="camera-controls">
                     {!cameraActive ? (
                         <button className="btn btn-primary camera-btn" onClick={() => { setIsManuallyStopped(false); startCamera(); }}>
                             Start Camera
@@ -259,6 +268,7 @@ export default function CameraPanel({ isActive, onFrameCapture }: CameraPanelPro
                         </button>
                     )}
                 </div>
+                )}
             </div>
         </div>
     );

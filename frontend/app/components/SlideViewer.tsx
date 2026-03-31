@@ -20,6 +20,15 @@ export default function SlideViewer({ currentSlide }: SlideViewerProps) {
     return (
         <div className="slide-viewer">
             <div className="slide-card">
+                {currentSlide.snapshot_url && (
+                    <div className="slide-image-container">
+                        <img 
+                            src={currentSlide.snapshot_url} 
+                            alt={currentSlide.title} 
+                            className="slide-image"
+                        />
+                    </div>
+                )}
                 <div className="slide-number">
                     Slide {currentSlide.slide_number} — {currentSlide.lecture_time}
                 </div>

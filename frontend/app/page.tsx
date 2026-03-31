@@ -116,8 +116,8 @@ export default function Home() {
 
             <div className="start-buttons">
               <button className="btn btn-primary start-btn" onClick={handleStartYoutube}>
-                Start YouTube Demo
-                <span className="btn-sub">Processes video transcript</span>
+                Start YouTube Lecture
+                <span className="btn-sub">Analyses video content</span>
               </button>
               <button className="btn btn-ghost start-btn" onClick={handleStartLive}>
                 Start Live Lecture
@@ -158,6 +158,8 @@ export default function Home() {
           {/* ── Center Column: Camera + Transcript + Timeline ── */}
           <CameraPanel
             isActive={state.isActive}
+            mode={state.mode}
+            youtubeUrl={state.youtubeUrl}
             onFrameCapture={handleFrameCapture}
           />
           <TranscriptPanel transcript={state.transcript} />

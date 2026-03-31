@@ -127,4 +127,5 @@ export interface LectureState {
   connectionStatus: "disconnected" | "connecting" | "connected";
   mode: "idle" | "demo" | "live" | "youtube";
   notesSavedPath: string | null;
+  youtubeUrl: string | null;
 }

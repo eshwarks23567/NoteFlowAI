@@ -27,6 +27,7 @@ const initialState: LectureState = {
     connectionStatus: "disconnected",
     mode: "idle",
     notesSavedPath: null,
+    youtubeUrl: null,
 };
 
 export function useLectureState() {
@@ -179,6 +180,7 @@ export function useLectureState() {
                 isActive: true,
                 startTime: Date.now() / 1000,
                 mode: youtubeUrl ? "youtube" : demoMode ? "demo" : "live",
+                youtubeUrl: youtubeUrl || null,
                 notesSavedPath: null,
                 // Reset state
                 transcript: [],
