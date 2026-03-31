@@ -168,7 +168,7 @@ async def stop_session(session_id: str):
 
     # Auto-save notes to file
     notes_dir = os.path.join(os.path.dirname(__file__), "notes")
-    saved_path = note_generator.save_notes_to_file(session, personalized_notes, notes_dir)
+    saved_path = save_notes_to_file(session, personalized_notes, notes_dir)
 
     return {
         "session_id": session_id,
