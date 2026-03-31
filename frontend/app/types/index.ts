@@ -125,4 +125,6 @@ export interface LectureState {
   summary: SummaryUpdate | null;
   conceptGraph: ConceptGraph | null;
   connectionStatus: "disconnected" | "connecting" | "connected";
+  mode: "idle" | "demo" | "live";
+  notesSavedPath: string | null;
 }

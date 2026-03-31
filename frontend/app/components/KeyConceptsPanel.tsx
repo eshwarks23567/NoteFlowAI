@@ -11,7 +11,7 @@ export default function KeyConceptsPanel({ concepts }: KeyConceptsPanelProps) {
         <div className="panel concepts-panel glass-card">
             <div className="panel-header">
                 <span className="panel-title">
-                    <span className="panel-title-icon">💡</span>
+                    <span className="panel-title-icon">KEY</span>
                     Key Concepts
                 </span>
                 {concepts.length > 0 && (

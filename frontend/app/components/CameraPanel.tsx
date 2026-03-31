@@ -17,6 +17,7 @@ export default function CameraPanel({ isActive, onFrameCapture }: CameraPanelPro
     const [facingMode, setFacingMode] = useState<"user" | "environment">("environment");
     const [audioLevel, setAudioLevel] = useState(0);
     const [frameCount, setFrameCount] = useState(0);
+    const [isManuallyStopped, setIsManuallyStopped] = useState(false);
 
     const startCamera = useCallback(async () => {
         try {
@@ -123,12 +124,19 @@ export default function CameraPanel({ isActive, onFrameCapture }: CameraPanelPro
 
     // Auto-start camera when session becomes active
     useEffect(() => {
-        if (isActive && !cameraActive && !error) {
+        if (isActive && !cameraActive && !error && !isManuallyStopped) {
             startCamera();
         } else if (!isActive && cameraActive) {
             stopCamera();
         }
-    }, [isActive, cameraActive, startCamera, stopCamera, error]);
+    }, [isActive, cameraActive, startCamera, stopCamera, error, isManuallyStopped]);
+
+    // Reset manually stopped state when a new session starts
+    useEffect(() => {
+        if (isActive) {
+            setIsManuallyStopped(false);
+        }
+    }, [isActive]);
 
     // Stop camera on unmount
     useEffect(() => {
@@ -139,7 +147,7 @@ export default function CameraPanel({ isActive, onFrameCapture }: CameraPanelPro
         <div className="glass-card camera-panel">
             <div className="panel-header">
                 <span className="panel-title">
-                    <span className="panel-title-icon">📹</span>
+                    <span className="panel-title-icon">CAM</span>
                     Live Camera Feed
                 </span>
                 <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
@@ -176,7 +184,7 @@ export default function CameraPanel({ isActive, onFrameCapture }: CameraPanelPro
                     {/* Overlay when not active */}
                     {!cameraActive && !error && (
                         <div className="camera-placeholder">
-                            <div className="camera-placeholder-icon">🎥</div>
+                            <div className="camera-placeholder-icon">CAM</div>
                             <div className="camera-placeholder-text">
                                 Point your camera at the projection screen & professor
                             </div>
@@ -189,7 +197,7 @@ export default function CameraPanel({ isActive, onFrameCapture }: CameraPanelPro
                     {/* Error state */}
                     {error && (
                         <div className="camera-error">
-                            <span style={{ fontSize: 28 }}>⚠️</span>
+                            <span style={{ fontSize: 28 }}>!</span>
                             <span>{error}</span>
                         </div>
                     )}
@@ -197,7 +205,7 @@ export default function CameraPanel({ isActive, onFrameCapture }: CameraPanelPro
                     {/* Audio level bar overlay */}
                     {cameraActive && (
                         <div className="camera-audio-overlay">
-                            <div className="audio-label">🎙️ MIC</div>
+                            <div className="audio-label">MIC</div>
                             <div className="audio-bar-track">
                                 <div
                                     className="audio-bar-fill"
@@ -226,12 +234,12 @@ export default function CameraPanel({ isActive, onFrameCapture }: CameraPanelPro
                 {/* Controls */}
                 <div className="camera-controls">
                     {!cameraActive ? (
-                        <button className="btn btn-primary camera-btn" onClick={startCamera}>
-                            📷 Start Camera
+                        <button className="btn btn-primary camera-btn" onClick={() => { setIsManuallyStopped(false); startCamera(); }}>
+                            Start Camera
                         </button>
                     ) : (
-                        <button className="btn btn-danger camera-btn" onClick={stopCamera}>
-                            ⏹ Stop Camera
+                        <button className="btn btn-danger camera-btn" onClick={() => { setIsManuallyStopped(true); stopCamera(); }}>
+                            Stop Camera
                         </button>
                     )}
                     <button
@@ -239,7 +247,7 @@ export default function CameraPanel({ isActive, onFrameCapture }: CameraPanelPro
                         onClick={toggleFacing}
                         title="Switch between front and rear camera"
                     >
-                        🔄 {facingMode === "user" ? "Front" : "Rear"}
+                        {facingMode === "user" ? "Front" : "Rear"}
                     </button>
                     {cameraActive && (
                         <button
@@ -247,7 +255,7 @@ export default function CameraPanel({ isActive, onFrameCapture }: CameraPanelPro
                             onClick={captureFrame}
                             title="Capture current frame for OCR"
                         >
-                            📸 Snap
+                            Snap
                         </button>
                     )}
                 </div>

@@ -11,7 +11,7 @@ export default function LiveSummaryPanel({ summary, isActive }: LiveSummaryPanel
         <div className="panel summary-panel glass-card">
             <div className="panel-header">
                 <span className="panel-title">
-                    <span className="panel-title-icon">📋</span>
+                    <span className="panel-title-icon"></span>
                     Live Summary
                 </span>
                 {isActive && (
@@ -33,7 +33,7 @@ export default function LiveSummaryPanel({ summary, isActive }: LiveSummaryPanel
                     </>
                 ) : (
                     <div className="summary-placeholder">
-                        <span className="summary-placeholder-icon">🎙️</span>
+                        <span className="summary-placeholder-icon"></span>
                         <span>{isActive ? "Waiting for first summary update..." : "Start a session to see live summaries"}</span>
                     </div>
                 )}

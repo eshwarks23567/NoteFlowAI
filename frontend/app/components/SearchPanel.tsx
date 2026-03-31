@@ -26,7 +26,7 @@ export default function SearchPanel({ onSearch }: SearchPanelProps) {
         <div className="panel glass-card" style={{ flex: "0 0 auto" }}>
             <div className="panel-header">
                 <span className="panel-title">
-                    <span className="panel-title-icon">🔍</span>
+                    <span className="panel-title-icon"></span>
                     Search
                 </span>
             </div>
@@ -50,7 +50,7 @@ export default function SearchPanel({ onSearch }: SearchPanelProps) {
                 {results.map((r, i) => (
                     <div key={i} className="search-result">
                         <div className="search-result-time">
-                            [{r.lecture_time}] — {r.type === "concept" ? "💡 Concept" : "📝 Transcript"}
+                            [{r.lecture_time}] -- {r.type === "concept" ? "Concept" : "Transcript"}
                         </div>
                         <div className="search-result-text">
                             {r.title || r.text}

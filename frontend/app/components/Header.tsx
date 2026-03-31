@@ -6,22 +6,31 @@ interface HeaderProps {
     isActive: boolean;
     elapsedSeconds: number;
     connectionStatus: string;
+    mode: "idle" | "demo" | "live";
+    notesSavedPath: string | null;
     onStart: () => void;
+    onStartLive: () => void;
     onStop: () => void;
     onExport: () => void;
 }
 
 export default function Header({
-    title, isActive, elapsedSeconds, connectionStatus, onStart, onStop, onExport,
+    title, isActive, elapsedSeconds, connectionStatus, mode, notesSavedPath,
+    onStart, onStartLive, onStop, onExport,
 }: HeaderProps) {
     return (
         <header className="app-header">
             <div className="header-left">
                 <div className="header-logo">
-                    <span className="header-logo-icon">🎓</span>
+                    <span className="header-logo-icon">N</span>
                     NoteFlow AI
                 </div>
                 <span className="header-title">{title}</span>
+                {isActive && mode !== "idle" && (
+                    <span className={`mode-badge ${mode}`}>
+                        {mode === "live" ? "LIVE" : "DEMO"}
+                    </span>
+                )}
             </div>
 
             <div className="header-right">
@@ -34,18 +43,14 @@ export default function Header({
                     {isActive ? "LIVE" : connectionStatus === "connected" ? "READY" : "OFFLINE"}
                 </span>
 
-                {!isActive ? (
-                    <button className="btn btn-primary" onClick={onStart}>
-                        ▶ Start Demo
-                    </button>
-                ) : (
+                {isActive && (
                     <button className="btn btn-danger" onClick={onStop}>
                         ■ Stop
                     </button>
                 )}
 
                 <button className="btn btn-ghost" onClick={onExport} title="Export Notes">
-                    📄 Export
+                    Export
                 </button>
             </div>
         </header>

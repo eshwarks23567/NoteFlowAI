@@ -25,12 +25,20 @@ const initialState: LectureState = {
     summary: null,
     conceptGraph: null,
     connectionStatus: "disconnected",
+    mode: "idle",
+    notesSavedPath: null,
 };
 
 export function useLectureState() {
     const [state, setState] = useState<LectureState>(initialState);
     const wsRef = useRef<WebSocket | null>(null);
     const timerRef = useRef<NodeJS.Timeout | null>(null);
+    const sessionIdRef = useRef<string | null>(null);
+
+    // Keep sessionId ref up to date
+    useEffect(() => {
+        sessionIdRef.current = state.sessionId;
+    }, [state.sessionId]);
 
     /* ── WebSocket connection ── */
     const connect = useCallback(() => {
@@ -135,6 +143,22 @@ export function useLectureState() {
         });
     };
 
+    /* ── Send transcript text to backend for processing ── */
+    const sendTranscript = useCallback(async (text: string) => {
+        const sid = sessionIdRef.current;
+        if (!sid || !text.trim()) return;
+        try {
+            await fetch(`${API_BASE}/api/session/${sid}/transcript`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ text: text.trim(), speaker: "professor" }),
+            });
+        } catch (e) {
+            // Best-effort — don't crash
+            console.error("Failed to send transcript:", e);
+        }
+    }, []);
+
     /* ── Session management ── */
     const startSession = async (title: string = "Untitled Lecture", demoMode: boolean = true) => {
         try {
@@ -150,6 +174,8 @@ export function useLectureState() {
                 title: data.title,
                 isActive: true,
                 startTime: Date.now() / 1000,
+                mode: demoMode ? "demo" : "live",
+                notesSavedPath: null,
                 // Reset state
                 transcript: [],
                 slides: [],
@@ -171,8 +197,13 @@ export function useLectureState() {
     const stopSession = async () => {
         if (!state.sessionId) return;
         try {
-            await fetch(`${API_BASE}/api/session/${state.sessionId}/stop`, { method: "POST" });
-            setState(s => ({ ...s, isActive: false }));
+            const res = await fetch(`${API_BASE}/api/session/${state.sessionId}/stop`, { method: "POST" });
+            const data = await res.json();
+            setState(s => ({
+                ...s,
+                isActive: false,
+                notesSavedPath: data.notes_saved || null,
+            }));
         } catch (e) {
             console.error("Failed to stop session:", e);
         }
@@ -238,41 +269,66 @@ export function useLectureState() {
     useEffect(() => {
         if (typeof window !== "undefined" && ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window)) {
             const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-            recognitionRef.current = new SpeechRecognition();
-            recognitionRef.current.continuous = true;
-            recognitionRef.current.interimResults = false;
+            const recognition = new SpeechRecognition();
+            recognition.continuous = true;
+            recognition.interimResults = false;
+            recognition.lang = "en-US";
+            recognition.maxAlternatives = 1;
 
-            recognitionRef.current.onresult = (event: any) => {
+            recognition.onresult = (event: any) => {
                 for (let i = event.resultIndex; i < event.results.length; ++i) {
                     if (event.results[i].isFinal) {
                         const text = event.results[i][0].transcript;
-                        const tEvent = {
-                            id: `local-${Date.now()}-${i}`,
-                            session_id: "local",
+                        const confidence = event.results[i][0].confidence;
+                        if (text.trim().length < 3) continue;
+
+                        const tEvent: TranscriptionEvent = {
+                            id: `live-${Date.now()}-${i}`,
+                            timestamp: Date.now() / 1000,
                             speaker: "professor",
                             text: text.trim(),
-                            start_time: 0,
-                            end_time: 0,
+                            confidence: confidence || 0.9,
                             lecture_time: new Date().toLocaleTimeString('en-US', { hour12: false }),
                             is_emphasis_phrase: false,
-                            keywords: []
+                            keywords: [],
                         };
+
+                        // Add to local state immediately for display
                         setState(prev => ({
                             ...prev,
-                            // Prepend local transcripts to simulated ones to mix them, or just append
-                            transcript: [...prev.transcript, tEvent as any],
+                            transcript: [...prev.transcript, tEvent],
                         }));
+
+                        // Send to backend for importance analysis
+                        sendTranscript(text.trim());
                     }
                 }
             };
-            recognitionRef.current.onerror = (e: any) => console.error("Speech Recognition Error:", e);
+
+            recognition.onerror = (e: any) => {
+                if (e.error !== "aborted" && e.error !== "no-speech") {
+                    console.error("Speech Recognition Error:", e.error);
+                }
+            };
+
+            // Auto-restart when speech recognition ends (browsers stop after silence)
+            recognition.onend = () => {
+                if (recognitionRef.current?._shouldRestart) {
+                    try { recognition.start(); } catch (e) { }
+                }
+            };
+
+            recognitionRef.current = recognition;
+            recognitionRef.current._shouldRestart = false;
         }
-    }, []);
+    }, [sendTranscript]);
 
     useEffect(() => {
         if (state.isActive && recognitionRef.current) {
+            recognitionRef.current._shouldRestart = true;
             try { recognitionRef.current.start(); } catch (e) { }
         } else if (!state.isActive && recognitionRef.current) {
+            recognitionRef.current._shouldRestart = false;
             try { recognitionRef.current.stop(); } catch (e) { }
         }
     }, [state.isActive]);
@@ -283,6 +339,7 @@ export function useLectureState() {
             wsRef.current?.close();
             if (timerRef.current) clearInterval(timerRef.current);
             if (recognitionRef.current) {
+                recognitionRef.current._shouldRestart = false;
                 try { recognitionRef.current.stop(); } catch (e) { }
             }
         };
@@ -295,5 +352,6 @@ export function useLectureState() {
         exportNotes,
         searchLecture,
         fetchConceptGraph,
+        sendTranscript,
     };
 }

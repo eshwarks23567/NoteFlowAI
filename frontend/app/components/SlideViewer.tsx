@@ -10,7 +10,7 @@ export default function SlideViewer({ currentSlide }: SlideViewerProps) {
         return (
             <div className="slide-viewer">
                 <div className="empty-state">
-                    <span className="empty-icon">🖥️</span>
+                    <span className="empty-icon">SLIDE</span>
                     <span className="empty-text">Current slide will be displayed here</span>
                 </div>
             </div>
@@ -26,8 +26,8 @@ export default function SlideViewer({ currentSlide }: SlideViewerProps) {
                 <div className="slide-title">{currentSlide.title}</div>
                 <div className="slide-content">{currentSlide.content_text}</div>
                 <div className="slide-badges">
-                    {currentSlide.has_diagram && <span className="slide-badge">📊 Diagram</span>}
-                    {currentSlide.has_equation && <span className="slide-badge">🔢 Equation</span>}
+                    {currentSlide.has_diagram && <span className="slide-badge">Diagram</span>}
+                    {currentSlide.has_equation && <span className="slide-badge">Equation</span>}
                 </div>
             </div>
         </div>

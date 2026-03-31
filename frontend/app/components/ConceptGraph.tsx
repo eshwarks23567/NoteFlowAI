@@ -48,7 +48,7 @@ export default function ConceptGraph({ graph, onFetch, isActive }: ConceptGraphP
             <div className="graph-container" style={{ height: containerHeight }}>
                 {!graph ? (
                     <div className="empty-state" style={{ height: "100%" }}>
-                        <span className="empty-icon">🕸️</span>
+                        <span className="empty-icon">GRAPH</span>
                         <span className="empty-text">Concept graph builds as the lecture progresses</span>
                     </div>
                 ) : (

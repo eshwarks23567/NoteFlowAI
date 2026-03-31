@@ -18,7 +18,7 @@ export default function TranscriptPanel({ transcript }: TranscriptPanelProps) {
         <div className="panel transcript-panel glass-card">
             <div className="panel-header">
                 <span className="panel-title">
-                    <span className="panel-title-icon">📝</span>
+                    <span className="panel-title-icon">TXT</span>
                     Live Transcript
                 </span>
                 {transcript.length > 0 && (
@@ -28,7 +28,7 @@ export default function TranscriptPanel({ transcript }: TranscriptPanelProps) {
             <div className="panel-body">
                 {transcript.length === 0 ? (
                     <div className="empty-state">
-                        <span className="empty-icon">🎙️</span>
+                        <span className="empty-icon"></span>
                         <span className="empty-text">Live transcription will appear here as the professor speaks</span>
                     </div>
                 ) : (
@@ -44,7 +44,7 @@ export default function TranscriptPanel({ transcript }: TranscriptPanelProps) {
                                     </span>
                                     <span className="transcript-time">{entry.lecture_time}</span>
                                     {entry.is_emphasis_phrase && (
-                                        <span className="count-badge critical">⚡</span>
+                                        <span className="count-badge critical">!</span>
                                     )}
                                 </div>
                                 <div className={`transcript-text ${entry.is_emphasis_phrase ? "emphasis" : ""}`}>

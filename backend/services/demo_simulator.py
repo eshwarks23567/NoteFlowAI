@@ -288,7 +288,7 @@ class DemoSimulator:
             # Send occasional alerts
             if has_emphasis and random.random() > 0.5:
                 alert = AlertEvent(
-                    message=f"⚡ High-importance moment: {keywords[0] if keywords else 'concept'} — pay attention!",
+                    message=f"High-importance moment: {keywords[0] if keywords else 'concept'} -- pay attention!",
                     alert_type="critical" if g_intensity > 0.8 else "warning",
                     lecture_time=self._lecture_time(),
                 )
@@ -332,7 +332,7 @@ class DemoSimulator:
                 "Overfitting: memorizing training data → poor generalization",
                 "Underfitting: model too simple to capture patterns",
                 "Always split data into train/validation/test sets",
-                "🔴 CRITICAL: Professor spent significant time on this topic",
+                "CRITICAL: Professor spent significant time on this topic",
             ]),
             ("Regularization Techniques", [
                 "L1 (Lasso): promotes sparse weights, feature selection",

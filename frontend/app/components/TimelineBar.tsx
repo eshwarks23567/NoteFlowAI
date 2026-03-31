@@ -18,7 +18,7 @@ export default function TimelineBar({
         <div className="panel timeline-panel glass-card">
             <div className="panel-header">
                 <span className="panel-title">
-                    <span className="panel-title-icon">📊</span>
+                    <span className="panel-title-icon">TL</span>
                     Timeline
                 </span>
                 <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 11, color: "var(--text-muted)" }}>

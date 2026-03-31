@@ -6,6 +6,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
 from pydantic import BaseModel
 
 # Ensure imports work from project root
@@ -19,20 +20,25 @@ from models.schemas import (
 from services.demo_simulator import (
     DemoSimulator, CONCEPT_GRAPH_NODES, CONCEPT_GRAPH_EDGES
 )
-from services.note_generator import generate_markdown_notes
+from services.note_generator import generate_markdown_notes, save_notes_to_file
+from services.live_processor import LiveProcessor
 
 
 # ── State ────────────────────────────────────────────────────────
 active_sessions: dict[str, LectureSession] = {}
 connected_clients: list[WebSocket] = []
 active_simulators: dict[str, DemoSimulator] = {}
+active_processors: dict[str, LiveProcessor] = {}
 
 
 # ── App ──────────────────────────────────────────────────────────
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    print("🎓 Live Lecture Note-Taker Backend — Ready")
-    print("   Demo mode available at POST /api/session/start")
+    # Create notes output directory
+    os.makedirs(os.path.join(os.path.dirname(__file__), "notes"), exist_ok=True)
+    print("Live Lecture Note-Taker Backend -- Ready")
+    print("   Demo mode: POST /api/session/start  {demo_mode: true}")
+    print("   Live mode: POST /api/session/start  {demo_mode: false}")
     yield
     # Cleanup
     for sim in active_simulators.values():
@@ -40,7 +46,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     title="Live Lecture Note-Taker",
-    version="1.0.0",
+    version="2.0.0",
     lifespan=lifespan,
 )
 
@@ -98,6 +104,7 @@ async def start_session(req: StartSessionRequest):
     active_sessions[session.id] = session
 
     if req.demo_mode:
+        # Demo mode — use the simulator with hardcoded data
         async def store_and_broadcast(msg: WSMessage):
             _store_event(session.id, msg.event_type, msg.data)
             await broadcast(msg)
@@ -105,8 +112,17 @@ async def start_session(req: StartSessionRequest):
         sim = DemoSimulator(send_callback=store_and_broadcast)
         active_simulators[session.id] = sim
         asyncio.create_task(sim.start())
+    else:
+        # Live mode — create a processor for real-time data
+        processor = LiveProcessor(send_callback=broadcast)
+        active_processors[session.id] = processor
 
-    return {"session_id": session.id, "title": session.title, "demo_mode": req.demo_mode}
+    return {
+        "session_id": session.id,
+        "title": session.title,
+        "demo_mode": req.demo_mode,
+        "mode": "demo" if req.demo_mode else "live",
+    }
 
 
 @app.post("/api/session/{session_id}/stop")
@@ -118,13 +134,66 @@ async def stop_session(session_id: str):
     session.end_time = time.time()
     session.duration_seconds = int(session.end_time - session.start_time)
 
+    # Stop simulator if demo mode
     sim = active_simulators.pop(session_id, None)
     if sim:
         await sim.stop()
 
-    return {"session_id": session_id, "duration": session.duration_seconds}
+    # Remove live processor
+    active_processors.pop(session_id, None)
+
+    # Auto-save notes to file
+    notes_dir = os.path.join(os.path.dirname(__file__), "notes")
+    saved_path = save_notes_to_file(session, notes_dir)
+
+    return {
+        "session_id": session_id,
+        "duration": session.duration_seconds,
+        "notes_saved": saved_path,
+    }
 
 
+# ── Transcript endpoint (receives text from browser Speech API) ─
+class TranscriptRequest(BaseModel):
+    text: str
+    speaker: str = "professor"
+
+@app.post("/api/session/{session_id}/transcript")
+async def receive_transcript(session_id: str, req: TranscriptRequest):
+    session = active_sessions.get(session_id)
+    if not session:
+        raise HTTPException(404, "Session not found")
+
+    processor = active_processors.get(session_id)
+    if not processor:
+        # Even in demo mode, allow transcript processing
+        processor = LiveProcessor(send_callback=broadcast)
+        active_processors[session_id] = processor
+
+    result = await processor.process_transcript(req.text, session)
+    return result
+
+
+# ── Frame endpoint (receives base64 JPEG from camera) ───────────
+class FrameRequest(BaseModel):
+    frame: str
+
+@app.post("/api/session/{session_id}/frame")
+async def receive_frame(session_id: str, req: FrameRequest):
+    session = active_sessions.get(session_id)
+    if not session:
+        raise HTTPException(404, "Session not found")
+
+    processor = active_processors.get(session_id)
+    if not processor:
+        processor = LiveProcessor(send_callback=broadcast)
+        active_processors[session_id] = processor
+
+    result = await processor.process_frame(req.frame, session)
+    return result
+
+
+# ── Notes endpoints ──────────────────────────────────────────────
 @app.get("/api/session/{session_id}/notes")
 async def get_notes(session_id: str):
     session = active_sessions.get(session_id)
@@ -134,16 +203,51 @@ async def get_notes(session_id: str):
     return {"session_id": session_id, "markdown": markdown}
 
 
+@app.get("/api/session/{session_id}/notes/download")
+async def download_notes(session_id: str):
+    """Download the saved notes file for a session."""
+    notes_dir = os.path.join(os.path.dirname(__file__), "notes")
+    # Find the most recent notes file for this session
+    session = active_sessions.get(session_id)
+    if not session:
+        raise HTTPException(404, "Session not found")
+
+    # Try to find saved file
+    import glob
+    pattern = os.path.join(notes_dir, f"*{session_id[:8]}*")
+    files = glob.glob(pattern)
+    if not files:
+        # Generate and save now
+        saved_path = save_notes_to_file(session, notes_dir)
+        if saved_path:
+            return FileResponse(saved_path, filename=os.path.basename(saved_path), media_type="text/markdown")
+        raise HTTPException(404, "No notes file found")
+
+    return FileResponse(files[-1], filename=os.path.basename(files[-1]), media_type="text/markdown")
+
+
 @app.get("/api/session/{session_id}/concepts")
 async def get_concepts(session_id: str):
     session = active_sessions.get(session_id)
     if not session:
         raise HTTPException(404, "Session not found")
-    # Build concept graph
-    graph = ConceptGraph(
-        nodes=CONCEPT_GRAPH_NODES,
-        edges=[ConceptLink(source=s, target=t, relationship=r) for s, t, r in CONCEPT_GRAPH_EDGES]
-    )
+
+    # For live mode, build graph from detected concepts
+    if session.key_concepts:
+        nodes = list({c.title for c in session.key_concepts})
+        edges = []
+        for c in session.key_concepts:
+            for r in c.related_concepts:
+                if r in nodes:
+                    edges.append(ConceptLink(source=c.title, target=r, relationship="relates_to"))
+        graph = ConceptGraph(nodes=nodes, edges=edges)
+    else:
+        # Fallback to demo graph
+        graph = ConceptGraph(
+            nodes=CONCEPT_GRAPH_NODES,
+            edges=[ConceptLink(source=s, target=t, relationship=r) for s, t, r in CONCEPT_GRAPH_EDGES]
+        )
+
     return {
         "concepts": [c.model_dump() for c in session.key_concepts],
         "graph": graph.model_dump()
@@ -190,7 +294,7 @@ async def search_session(session_id: str, query: SearchQuery):
 async def websocket_live(ws: WebSocket):
     await ws.accept()
     connected_clients.append(ws)
-    print(f"🔌 Client connected ({len(connected_clients)} total)")
+    print(f"Client connected ({len(connected_clients)} total)")
     try:
         while True:
             # Keep connection alive; handle client messages
@@ -205,12 +309,21 @@ async def websocket_live(ws: WebSocket):
                             lecture_time=msg.get("lecture_time", "00:00:00"),
                             flagged_for_review=msg.get("flagged", False),
                         ))
+            # Handle transcript from client via WebSocket
+            elif msg.get("type") == "transcript":
+                for sid, session in active_sessions.items():
+                    if session.is_active:
+                        processor = active_processors.get(sid)
+                        if not processor:
+                            processor = LiveProcessor(send_callback=broadcast)
+                            active_processors[sid] = processor
+                        await processor.process_transcript(msg.get("text", ""), session)
     except WebSocketDisconnect:
         pass
     finally:
         if ws in connected_clients:
             connected_clients.remove(ws)
-        print(f"🔌 Client disconnected ({len(connected_clients)} total)")
+        print(f"Client disconnected ({len(connected_clients)} total)")
 
 
 # ── Main ─────────────────────────────────────────────────────────
