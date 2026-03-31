@@ -126,12 +126,12 @@ export default function CameraPanel({ isActive, mode, youtubeUrl, onFrameCapture
 
     // Auto-start camera when session becomes active
     useEffect(() => {
-        if (isActive && !cameraActive && !error && !isManuallyStopped) {
+        if (isActive && mode !== "youtube" && !cameraActive && !error && !isManuallyStopped) {
             startCamera();
-        } else if (!isActive && cameraActive) {
+        } else if ((!isActive || mode === "youtube") && cameraActive) {
             stopCamera();
         }
-    }, [isActive, cameraActive, startCamera, stopCamera, error, isManuallyStopped]);
+    }, [isActive, mode, cameraActive, startCamera, stopCamera, error, isManuallyStopped]);
 
     // Reset manually stopped state when a new session starts
     useEffect(() => {
