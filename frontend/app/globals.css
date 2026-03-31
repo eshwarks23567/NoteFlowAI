@@ -1009,7 +1009,6 @@ body {
 .camera-panel {
   grid-column: 2;
   grid-row: 1;
-  min-height: 200px;
 }
 
 .camera-body {
@@ -1019,6 +1018,8 @@ body {
 .camera-viewport {
   position: relative;
   width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
   aspect-ratio: 16 / 9;
   min-height: 240px;
   max-height: 60vh;

@@ -152,7 +152,7 @@ export default function Home() {
       {(state.isActive || state.transcript.length > 0) && (
         <div className="dashboard-grid">
           {/* ── Left Column: Summary + Key Concepts ── */}
-          <LiveSummaryPanel summary={state.summary} isActive={state.isActive} />
+          <LiveSummaryPanel summary={state.summary} isActive={state.isActive} mode={state.mode} />
           <KeyConceptsPanel concepts={state.keyConcepts} />
 
           {/* ── Center Column: Camera + Transcript + Timeline ── */}

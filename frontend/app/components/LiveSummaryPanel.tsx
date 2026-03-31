@@ -4,17 +4,18 @@ import type { SummaryUpdate } from "../types";
 interface LiveSummaryPanelProps {
     summary: SummaryUpdate | null;
     isActive: boolean;
+    mode?: string;
 }
 
-export default function LiveSummaryPanel({ summary, isActive }: LiveSummaryPanelProps) {
+export default function LiveSummaryPanel({ summary, isActive, mode }: LiveSummaryPanelProps) {
     return (
         <div className="panel summary-panel glass-card">
             <div className="panel-header">
                 <span className="panel-title">
                     <span className="panel-title-icon"></span>
-                    Live Summary
+                    {mode === 'youtube' ? 'Lecture' : 'Live'} Summary
                 </span>
-                {isActive && (
+                {isActive && mode !== 'youtube' && (
                     <span className="count-badge">LIVE</span>
                 )}
             </div>
