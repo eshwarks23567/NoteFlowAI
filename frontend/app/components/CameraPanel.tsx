@@ -159,7 +159,7 @@ export default function CameraPanel({ isActive, mode, youtubeUrl, onFrameCapture
                             REC
                         </span>
                     )}
-                    {cameraActive && (
+                    {cameraActive && mode !== "youtube" && (
                         <span style={{
                             fontFamily: "'JetBrains Mono', monospace",
                             fontSize: 10,
@@ -211,7 +211,7 @@ export default function CameraPanel({ isActive, mode, youtubeUrl, onFrameCapture
                     )}
 
                     {/* Audio level bar overlay */}
-                    {cameraActive && (
+                    {cameraActive && mode !== "youtube" && (
                         <div className="camera-audio-overlay">
                             <div className="audio-label">MIC</div>
                             <div className="audio-bar-track">
@@ -232,7 +232,7 @@ export default function CameraPanel({ isActive, mode, youtubeUrl, onFrameCapture
                     )}
 
                     {/* Processing indicator */}
-                    {cameraActive && isActive && (
+                    {cameraActive && isActive && mode !== "youtube" && (
                         <div className="camera-processing-badge">
                             <span className="processing-dot" /> Processing every 3s
                         </div>
