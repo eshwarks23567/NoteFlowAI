@@ -26,13 +26,12 @@ export default function SearchPanel({ onSearch }: SearchPanelProps) {
         <div className="panel glass-card" style={{ flex: "0 0 auto" }}>
             <div className="panel-header">
                 <span className="panel-title">
-                    <span className="panel-title-icon"></span>
+                    <span className="panel-title-icon">SRC</span>
                     Search
                 </span>
             </div>
             <div className="panel-body">
                 <div className="search-input-wrapper">
-                    <span className="search-icon">🔎</span>
                     <input
                         type="text"
                         className="search-input"

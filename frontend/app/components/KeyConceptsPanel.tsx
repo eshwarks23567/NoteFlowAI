@@ -23,7 +23,7 @@ export default function KeyConceptsPanel({ concepts }: KeyConceptsPanelProps) {
             <div className="panel-body">
                 {concepts.length === 0 ? (
                     <div className="empty-state">
-                        <span className="empty-icon">🔍</span>
+                        <span className="empty-icon-text" style={{ fontSize: '24px', opacity: 0.3 }}>--</span>
                         <span className="empty-text">Key concepts will appear here as they&apos;re detected during the lecture</span>
                     </div>
                 ) : (
@@ -41,7 +41,7 @@ export default function KeyConceptsPanel({ concepts }: KeyConceptsPanelProps) {
                                 <div className="concept-quote">&ldquo;{concept.professor_quote}&rdquo;</div>
                             )}
                             {concept.gesture_note && (
-                                <div className="concept-gesture">🤲 {concept.gesture_note}</div>
+                                <div className="concept-gesture">Gesture: {concept.gesture_note}</div>
                             )}
                             {concept.related_concepts.length > 0 && (
                                 <div className="concept-tags">

@@ -274,7 +274,19 @@ body {
 }
 
 .panel-title-icon {
-  font-size: 16px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-primary);
+  padding: 4px 6px;
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
 }
 
 .panel-body {
@@ -1018,12 +1030,12 @@ body {
 .camera-viewport {
   position: relative;
   width: 100%;
-  max-width: 1200px;
+  max-width: calc(55vh * 16 / 9);
   margin: 0 auto;
   aspect-ratio: 16 / 9;
   min-height: 240px;
-  max-height: 60vh;
-  background: #000;
+  max-height: 55vh;
+  background: var(--bg-surface);
   border-radius: var(--radius-md);
   overflow: hidden;
   border: 1px solid var(--border-subtle);

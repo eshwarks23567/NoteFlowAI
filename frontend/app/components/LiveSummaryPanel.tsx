@@ -12,7 +12,7 @@ export default function LiveSummaryPanel({ summary, isActive, mode }: LiveSummar
         <div className="panel summary-panel glass-card">
             <div className="panel-header">
                 <span className="panel-title">
-                    <span className="panel-title-icon"></span>
+                    <span className="panel-title-icon">SUM</span>
                     {mode === 'youtube' ? 'Lecture' : 'Live'} Summary
                 </span>
                 {isActive && mode !== 'youtube' && (
