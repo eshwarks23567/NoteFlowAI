@@ -23,6 +23,7 @@ from services.demo_simulator import (
 from services.note_generator import generate_markdown_notes, save_notes_to_file
 from services.live_processor import LiveProcessor
 from services.youtube_processor import YoutubeProcessor
+from services.llm_service import llm_service
 
 
 # ── State ────────────────────────────────────────────────────────
@@ -146,6 +147,11 @@ async def stop_session(session_id: str):
     session.end_time = time.time()
     session.duration_seconds = int(session.end_time - session.start_time)
 
+    # Stop YouTube processor
+    yt_proc = active_youtube_processors.pop(session_id, None)
+    if yt_proc:
+        await yt_proc.stop()
+
     # Stop simulator if demo mode
     sim = active_simulators.pop(session_id, None)
     if sim:
@@ -154,14 +160,21 @@ async def stop_session(session_id: str):
     # Remove live processor
     active_processors.pop(session_id, None)
 
+    # Generate personalized notes using LLM if transcript exists
+    personalized_notes = None
+    if session.transcript:
+        full_text = "\n".join([f"[{t.lecture_time}] {t.text}" for t in session.transcript])
+        personalized_notes = await llm_service.generate_personalized_notes(full_text)
+
     # Auto-save notes to file
     notes_dir = os.path.join(os.path.dirname(__file__), "notes")
-    saved_path = save_notes_to_file(session, notes_dir)
+    saved_path = note_generator.save_notes_to_file(session, personalized_notes, notes_dir)
 
     return {
         "session_id": session_id,
         "duration": session.duration_seconds,
         "notes_saved": saved_path,
+        "llm_summary": "Generated" if personalized_notes else "Skipped"
     }
 
 

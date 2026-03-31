@@ -17,7 +17,7 @@ def importance_stars(score: float) -> str:
     return ""
 
 
-def generate_markdown_notes(session: LectureSession) -> str:
+def generate_markdown_notes(session: LectureSession, personalized_notes: str = None) -> str:
     """Generate structured markdown notes from a lecture session."""
     duration = session.duration_seconds
     dur_str = f"{duration // 60} minutes" if duration else "In progress"
@@ -28,6 +28,13 @@ def generate_markdown_notes(session: LectureSession) -> str:
         f"**Date**: {date_str} | **Duration**: {dur_str}",
         "",
     ]
+
+    # LLM Personalized Summary
+    if personalized_notes:
+        lines.append("## AI Personalized Study Notes")
+        lines.append("")
+        lines.append(personalized_notes)
+        lines.append("")
 
     # Key concepts section
     critical = [c for c in session.key_concepts if c.importance_level == ImportanceLevel.CRITICAL]
@@ -116,12 +123,12 @@ def generate_markdown_notes(session: LectureSession) -> str:
     return "\n".join(lines)
 
 
-def save_notes_to_file(session: LectureSession, output_dir: str = "notes") -> str | None:
+def save_notes_to_file(session: LectureSession, personalized_notes: str = None, output_dir: str = "notes") -> str | None:
     """Save generated notes to a markdown file and return the file path."""
     try:
         os.makedirs(output_dir, exist_ok=True)
 
-        markdown = generate_markdown_notes(session)
+        markdown = generate_markdown_notes(session, personalized_notes)
 
         # Build filename from title and date
         safe_title = re.sub(r'[^\w\s-]', '', session.title).strip()

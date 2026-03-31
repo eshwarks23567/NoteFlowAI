@@ -60,14 +60,13 @@ class YoutubeProcessor:
             wait_time = entry['start'] - (time.time() - self.start_time)
             if wait_time > 0:
                 await asyncio.sleep(wait_time)
-            
             t_event = TranscriptionEvent(
                 text=entry['text'],
                 speaker=SpeakerRole.PROFESSOR,
                 confidence=0.95,
                 lecture_time=self._format_time(entry['start']),
             )
-            session.transcript.append(t_event)
+            # session.transcript.append(t_event) # Removed: _store_event handles this via callback
             await self.send(WSMessage(
                 event_type=EventType.TRANSCRIPTION,
                 data=t_event.model_dump()
@@ -102,7 +101,6 @@ class YoutubeProcessor:
                     import base64
                     frame_b64 = base64.b64encode(stdout).decode('utf-8')
                     slide_count += 1
-                    
                     s_event = SlideEvent(
                         slide_number=slide_count,
                         title=f"YouTube Snapshot at {lt}",
@@ -110,7 +108,7 @@ class YoutubeProcessor:
                         lecture_time=lt,
                         snapshot_url=f"data:image/jpeg;base64,{frame_b64}"
                     )
-                    session.slides.append(s_event)
+                    # session.slides.append(s_event)
                     await self.send(WSMessage(
                         event_type=EventType.SLIDE_CHANGE,
                         data=s_event.model_dump()

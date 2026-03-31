@@ -241,7 +241,7 @@ body {
 /* ── Main Grid ── */
 .dashboard-grid {
   display: grid;
-  grid-template-columns: 280px 1fr 300px;
+  grid-template-columns: 320px 1fr 340px;
   grid-template-rows: auto 1fr auto;
   gap: var(--space-6);
   padding: var(--space-6) var(--space-8);
@@ -1020,7 +1020,8 @@ body {
   position: relative;
   width: 100%;
   aspect-ratio: 16 / 9;
-  max-height: 240px;
+  min-height: 240px;
+  max-height: 60vh;
   background: #000;
   border-radius: var(--radius-md);
   overflow: hidden;
